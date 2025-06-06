@@ -1,0 +1,195 @@
+/* Web3 AI Page Styling */
+body {
+    font-family: 'Montserrat', 'Roboto', sans-serif; /* Use Montserrat if available, fallback to Roboto */
+    background-color: #0e0e0e;
+    color: #ffffff;
+    text-align: center;
+}
+
+header {
+    padding: 20px;
+    background: linear-gradient(to right, #ff8a00, #e52e71);
+}
+
+h1, h2 {
+    font-weight: bold;
+}
+h3 {
+    font-size: 22px;
+    color: #ff8a00;
+    margin-top: 30px;
+}
+
+.nft-gallery img {
+    width: 200px;
+    margin: 10px;
+    border-radius: 10px;
+    transition: transform 0.3s ease-in-out;
+}
+
+.nft-gallery img:hover {
+    transform: scale(1.1);
+}
+
+/* General Layout Fix */
+section {
+    width: 90%;
+    margin: 30px auto;
+    text-align: left; /* Keeps readability intact */
+    max-width: 1000px;
+}
+
+/* Web3 Table Formatting */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 2px solid #ff8a00; /* Adds clear border */
+}
+
+th, td {
+    padding: 12px;
+    border: 1px solid #444; /* Column separators */
+    text-align: left; /* Improve readability */
+}
+
+th {
+    background: #ff8a00;
+    color: #fff;
+}
+
+/* Alternating Row Colors */
+tr:nth-child(even) {
+    background-color: rgba(14, 14, 14, 0.7);
+}
+
+tr:nth-child(odd) {
+    background-color: rgba(255, 138, 0, 0.1);
+}
+
+/* Call-to-Action */
+.cta-button {
+    display: block;
+    width: 250px;
+    margin: 20px auto;
+    padding: 12px;
+    font-size: 18px;
+    background: #e52e71;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    text-align: center;
+    transition: background 0.3s;
+}
+
+.cta-button:hover {
+    background: #ff8a00;
+}
+
+
+/* Transaction Table Formatting */
+#tx-table {
+    width: 100%;
+    margin: auto;
+    border-collapse: collapse;
+    border: 2px solid #ff8a00;
+}
+
+#tx-table th, #tx-table td {
+    padding: 10px;
+    border: 1px solid #444;
+    text-align: left;
+}
+
+#tx-table th {
+    background: rgba(255, 138, 0, 0.9);
+    color: #fff;
+}
+
+#tx-table tr:nth-child(even) {
+    background-color: rgba(14, 14, 14, 0.7);
+}
+
+#tx-table tr:nth-child(odd) {
+    background-color: rgba(255, 138, 0, 0.1);
+}
+
+/* Ensure readable text */
+#tx-table td a {
+    color: #ff8a00;
+    text-decoration: none;
+}
+
+#tx-table td b {
+    font-weight: normal;
+}
+
+/* Column width adjustments */
+.tx-data {
+    flex: 1;
+    text-align: left;
+}
+
+.tx-hash {
+    flex: 2;
+    word-break: break-all; /* Prevent overflow */
+}
+
+/* Blockchain Verification Section */
+#verification {
+    background: rgba(30, 30, 30, 0.9);
+    color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+
+
+.transaction-tracker {
+    width: 100%;
+    height: 600px;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(255, 138, 0, 0.3);
+}
+
+/* Fix Embedded Etherscan Display */
+.marketplace-frame, .transaction-tracker {
+    width: 100%;
+    height: 600px;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(255, 138, 0, 0.3);
+}
+
+/* Navigation Bar */
+.navbar {
+    width: 100%;
+    background: linear-gradient(to right, #ff8a00, #e52e71);
+    padding: 0;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.navbar ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.navbar li {
+    margin: 0 18px;
+}
+.navbar a {
+    display: block;
+    color: #fff;
+    font-weight: bold;
+    text-decoration: none;
+    padding: 18px 0;
+    transition: color 0.2s;
+    font-size: 18px;
+}
+.navbar a:hover, .navbar a:focus {
+    color: #0e0e0e;
+    text-decoration: underline;
+}
