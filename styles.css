@@ -162,13 +162,18 @@ tr:nth-child(odd) {
 }
 
 /* Navigation Bar */
+/* Sticky Navigation Bar */
 .navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
     width: 100%;
     background: linear-gradient(to right, #ff8a00, #e52e71);
-    padding: 0;
-    margin-bottom: 30px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 30px;
+    padding: 0;
 }
+
 .navbar ul {
     list-style: none;
     margin: 0;
@@ -177,9 +182,11 @@ tr:nth-child(odd) {
     justify-content: center;
     flex-wrap: wrap;
 }
+
 .navbar li {
     margin: 0 18px;
 }
+
 .navbar a {
     display: block;
     color: #fff;
@@ -189,7 +196,29 @@ tr:nth-child(odd) {
     transition: color 0.2s;
     font-size: 18px;
 }
+
 .navbar a:hover, .navbar a:focus {
     color: #0e0e0e;
     text-decoration: underline;
+}
+
+/* Additional Styles for New Links */
+.navbar a {
+    position: relative;
+}
+
+.navbar a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -2px;
+    left: 50%;
+    background: #0e0e0e;
+    transition: width 0.3s ease, left 0.3s ease;
+}
+
+.navbar a:hover::after, .navbar a:focus::after {
+    width: 100%;
+    left: 0;
 }
