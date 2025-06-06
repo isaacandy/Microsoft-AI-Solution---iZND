@@ -179,7 +179,7 @@ tr:nth-child(odd) {
     margin: 0;
     padding: 0;
     display: flex;
-    justify-content: center;
+    justify-content: flex-start; /* Aligns menu to the left */
     flex-wrap: wrap;
 }
 
