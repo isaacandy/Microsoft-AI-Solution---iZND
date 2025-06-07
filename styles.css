@@ -222,3 +222,29 @@ tr:nth-child(odd) {
     width: 100%;
     left: 0;
 }
+
+.outline-flex {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    flex-wrap: wrap;
+}
+.outline-text {
+    flex: 2 1 320px;
+}
+.outline-img img {
+    max-width: 220px;
+    width: 100%;
+    border-radius: 12px;
+    display: block;
+    margin: 0 auto;
+}
+@media (max-width: 700px) {
+    .outline-flex {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .outline-img img {
+        margin: 20px 0 0 0;
+    }
+}
