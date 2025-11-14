@@ -96,6 +96,8 @@ Deployment notes:
 - Add `CF_ACCOUNT_ID` if required by your Wrangler configuration.
 - Add `ETHERSCAN_API_KEY` and `PROVIDER_URL` as Cloudflare Worker secrets (via `wrangler secret put` or the Cloudflare dashboard) so the Worker can call Etherscan and your JSON-RPC provider.
 
+Note: The workflow can now automatically compute the Cloudflare Workers subdomain and set the `PROXY_URL` repository secret after publishing the Worker. For this to work, add the `CF_ACCOUNT_ID` repository secret (Cloudflare account ID) in addition to `CF_API_TOKEN`.
+
 Set the `PROXY_URL` secret in GitHub to your Cloudflare Worker URL (for example: `https://your-worker.example.workers.dev`). The workflow will replace the `__PROXY_URL__` placeholder in `index.html` before uploading the static site so the frontend calls the correct proxy endpoint.
 
 The GitHub Action will attempt to publish the Worker automatically after uploading static files to 4EVERLAND. You must configure the Cloudflare secrets and the 4EVERLAND secrets in the repository settings for the workflow to complete automatically.
