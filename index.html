@@ -338,7 +338,7 @@
     <section id="marketplace">
         <h2>🔗 Explore TheAlien.888 Marketplace</h2>
         <p>Discover AI-generated NFTs powered by smart contracts.</p>
-        <iframe src="https://rarible.com/thealien888/" width="100%" height="600px" class="marketplace-frame" title="TheAlien.888 NFT Marketplace"></iframe>
+        <iframe src="https://og.rarible.com/thealien888/items" width="100%" height="600px" class="marketplace-frame" title="TheAlien.888 NFT Marketplace"></iframe>
     </section>
 
 
@@ -380,31 +380,38 @@
             const contractAddress = "0x295a6a847e3715f224826aa88156f356ac523eef";
             const etherscanApiKey = "YQ1I3BIJVRMUJ9JAC75129TP8HGI4KSATR";
 
-        // Fetch transactions with robust error handling and validation
+        // Fetch transactions via local proxy (server handles Etherscan V2 API key and headers)
         async function fetchTransactions() {
-            // Etherscan V2 API endpoint for account transactions
-            const url = `https://api.etherscan.io/api/v2/accounts/${contractAddress}/transactions?sort=desc`;
+            const url = `/api/txlist?address=${contractAddress}`;
             try {
-                const res = await fetch(url, {
-                    headers: {
-                        'X-API-KEY': etherscanApiKey
-                    }
-                });
+                const res = await fetch(url);
                 if (!res.ok) {
-                    console.error('Etherscan HTTP error', res.status, res.statusText);
+                    console.error('Proxy HTTP error', res.status, res.statusText);
                     const errorBody = await res.text();
                     return { ok: false, error: `HTTP ${res.status}: ${errorBody || res.statusText}` };
                 }
                 const data = await res.json();
-                // V2 response has an 'items' array
+
+                // Etherscan V2 responses typically include an 'items' array
                 if (data && Array.isArray(data.items)) {
                     return { ok: true, result: data.items };
-                } else {
-                    // Handle cases where 'items' is missing
-                    console.warn('Etherscan V2 response missing "items" array', data);
-                    const errorMessage = data.message || 'Unexpected API response format.';
-                    return { ok: false, error: errorMessage, raw: data };
                 }
+
+                // Fallback: some endpoints may use 'result' array
+                if (data && Array.isArray(data.result)) {
+                    return { ok: true, result: data.result };
+                }
+
+                // API-level error forwarded by proxy
+                if (data && (data.status === '0' || data.status === 0 || data.message)) {
+                    const apiMessage = data.message || 'Etherscan API error';
+                    const apiResult = data.result ? JSON.stringify(data.result) : '';
+                    console.warn('Etherscan API error forwarded by proxy', data);
+                    return { ok: false, error: `${apiMessage}${apiResult ? (': ' + apiResult) : ''}`, raw: data };
+                }
+
+                console.warn('Unexpected proxy response format', data);
+                return { ok: false, error: 'Unexpected API response format', raw: data };
             } catch (err) {
                 console.error('Network or parsing error fetching transactions', err);
                 return { ok: false, error: err.message || String(err) };
@@ -429,8 +436,17 @@
             
             const response = await fetchTransactions();
             if (!response.ok) {
-                // Show user-friendly message and log details to console
-                txList.innerHTML = `<tr><td colspan='4'>Unable to fetch transactions: ${response.error || 'Unknown error'}</td></tr>`;
+                // Build a helpful error message
+                let userMsg = response.error || 'Unknown error';
+                // If Etherscan returned a NOTOK, suggest common causes
+                const lower = (userMsg || '').toLowerCase();
+                if (lower.includes('notok') || lower.includes('apikey') || lower.includes('invalid') || lower.includes('rate limit')) {
+                    userMsg += ' — check your Etherscan API key validity and rate limits. If calling from a static site, Etherscan may restrict browser access.';
+                } else {
+                    userMsg += ' — network/CORS or API issue.';
+                }
+
+                txList.innerHTML = `<tr><td colspan='4'>Unable to fetch transactions: ${userMsg}</td></tr>`;
                 if (response.raw) console.debug('Etherscan raw response:', response.raw);
                 return;
             }
@@ -494,39 +510,38 @@ document.getElementById('mint-btn').addEventListener('click', function(e) {
         <script>
 const maxSupply = 10000; // or null if unknown
 
-async function updateMintTracker() {
-    // Etherscan V2 API endpoint for ERC-721 transfers
-    const url = `https://api.etherscan.io/api/v2/accounts/${contractAddress}/transactions/erc721?sort=desc`;
+    async function updateMintTracker() {
+    // Call local proxy (server forwards to Etherscan V2)
+    const url = `/api/mints?address=${contractAddress}&page=1&offset=100`;
     try {
-        const res = await fetch(url, {
-            headers: {
-                'X-API-KEY': etherscanApiKey
-            }
-        });
+        const res = await fetch(url);
         if (!res.ok) {
-            console.error('Etherscan HTTP error (mint tracker):', res.status, res.statusText);
+            console.error('Proxy HTTP error (mint tracker):', res.status, res.statusText);
             const errorBody = await res.text();
             document.getElementById('minted-nfts').innerText = `Unable to fetch mint data (HTTP ${res.status})`;
             return;
         }
         const data = await res.json();
-        // V2 response has an 'items' array
-        if (data && Array.isArray(data.items) && data.items.length > 0) {
-            // Count unique token IDs as minted NFTs
-            const uniqueTokenIds = new Set(data.items.map(tx => tx.token_id));
+
+        // Prefer Etherscan V2 'items' array
+        const items = (data && Array.isArray(data.items)) ? data.items : (Array.isArray(data.result) ? data.result : []);
+        if (items && items.length > 0) {
+            // Extract token id fields robustly (different API versions use different names)
+            const tokenIds = items.map(tx => tx.tokenID || tx.tokenId || tx.token_id || tx.tokenIDstr || tx.tokenIDStr).filter(Boolean);
+            const uniqueTokenIds = new Set(tokenIds);
             const mintedText = maxSupply
                 ? `${uniqueTokenIds.size} of ${maxSupply} minted`
                 : `${uniqueTokenIds.size} NFTs minted`;
             document.getElementById('minted-nfts').innerText = mintedText;
-        } else if (data && Array.isArray(data.items) && data.items.length === 0) {
+        } else if (items && items.length === 0) {
             document.getElementById('minted-nfts').innerText = "No NFTs minted yet.";
         } else {
             console.warn('Etherscan mint tracker response not OK', data);
-            document.getElementById('minted-nfts').innerText = `Unable to fetch mint data: ${data.message || 'Unknown error'}`;
+            document.getElementById('minted-nfts').innerText = `Unable to fetch mint data: ${data && data.message ? data.message : 'Unknown error'}`;
         }
     } catch (e) {
         console.error('Error fetching mint data', e);
-        document.getElementById('minted-nfts').innerText = "Unable to fetch mint data.";
+        document.getElementById('minted-nfts').innerText = "Unable to fetch mint data. Possibly blocked by CORS from the browser.";
     }
 }
 // Initial fetch and periodic refresh (match tx table)
