@@ -1,0 +1,61 @@
+name: Deploy static site to 4EVERLAND
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Archive site files
+        run: |
+          zip -r site.zip index.html styles.css *.html || true
+
+      - name: Upload to 4EVERLAND (placeholder)
+        env:
+          FOURVERLAND_API_URL: ${{ secrets.FOREVERLAND_API_URL }}
+          FOREVERLAND_API_KEY: ${{ secrets.FOREVERLAND_API_KEY }}
+        run: |
+          echo "Uploading site.zip to 4EVERLAND..."
+          # Replace the endpoint and form params below with the exact 4EVERLAND upload API or CLI command
+          if [ -z "$FOURVERLAND_API_URL" ] || [ -z "$FOREVERLAND_API_KEY" ]; then
+            echo "Missing 4EVERLAND secrets. Set FOREVERLAND_API_URL and FOREVERLAND_API_KEY in repository secrets." >&2
+            exit 1
+          fi
+
+          # Example generic upload using a Bearer token. Update path /upload and fields per 4EVERLAND docs.
+          RESPONSE=$(curl -s -X POST "$FOURVERLAND_API_URL/upload" \
+            -H "Authorization: Bearer $FOREVERLAND_API_KEY" \
+            -F "file=@site.zip" )
+
+          echo "Upload response:" 
+          echo "$RESPONSE"
+
+      - name: Verify deployment (optional)
+        env:
+          DEPLOY_URL: ${{ secrets.FOREVERLAND_DEPLOY_URL }}
+        run: |
+          if [ -n "$DEPLOY_URL" ]; then
+            echo "Checking $DEPLOY_URL"
+            curl -fsS "$DEPLOY_URL" -o /dev/null || (echo "Health check failed" && exit 1)
+            echo "Health check passed"
+          else
+            echo "No DEPLOY_URL secret configured; skipping verification. You can add the public URL returned by 4EVERLAND to repository secrets as FOREVERLAND_DEPLOY_URL to enable verification."
+          fi
+
+      - name: Deploy Cloudflare Worker
+        uses: cloudflare/wrangler-action@2
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          working-directory: ./worker
+
+      - name: (Optional) Set Worker env vars
+        run: |
+          echo "Set ETHERSCAN_API_KEY and PROVIDER_URL as Cloudflare Worker secrets via Wrangler or Cloudflare dashboard."
+          echo "Example: npx wrangler secret put ETHERSCAN_API_KEY --env production (requires interactive input)."
+        working-directory: ./worker

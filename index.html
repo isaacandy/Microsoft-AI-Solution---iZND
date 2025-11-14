@@ -369,6 +369,7 @@
                 <th>From</th>
                 <th>To</th>
                 <th>Value (ETH)</th>
+                <th>Method</th>
             </tr>
         </thead>
         <tbody id="tx-list">
@@ -382,7 +383,7 @@
 
         // Fetch transactions via local proxy (server handles Etherscan V2 API key and headers)
         async function fetchTransactions() {
-            const url = `/api/txlist?address=${contractAddress}`;
+            const url = `http://localhost:8080/api/txlist?address=${contractAddress}`;
             try {
                 const res = await fetch(url);
                 if (!res.ok) {
@@ -392,22 +393,32 @@
                 }
                 const data = await res.json();
 
-                // Etherscan V2 responses typically include an 'items' array
+                // Prefer V2 'result' array if present and status OK
+                if (data && Array.isArray(data.result) && (data.status === '1' || data.status === 1)) {
+                    return { ok: true, result: data.result };
+                }
+
+                // Some V2 responses may use 'items'
                 if (data && Array.isArray(data.items)) {
                     return { ok: true, result: data.items };
                 }
 
-                // Fallback: some endpoints may use 'result' array
+                // V1 fallback handling (legacy) — treat deprecation as no-data
                 if (data && Array.isArray(data.result)) {
+                    if (data.status === '0' || data.status === 0) {
+                        const msg = String(data.message || '').toLowerCase();
+                        if (msg.includes('deprecated') && msg.includes('v1')) {
+                            console.warn('V1 API deprecated for this key; returning empty result');
+                            return { ok: true, result: [] };
+                        }
+                        return { ok: false, error: data.message || 'Etherscan API error', raw: data };
+                    }
                     return { ok: true, result: data.result };
                 }
 
-                // API-level error forwarded by proxy
-                if (data && (data.status === '0' || data.status === 0 || data.message)) {
-                    const apiMessage = data.message || 'Etherscan API error';
-                    const apiResult = data.result ? JSON.stringify(data.result) : '';
-                    console.warn('Etherscan API error forwarded by proxy', data);
-                    return { ok: false, error: `${apiMessage}${apiResult ? (': ' + apiResult) : ''}`, raw: data };
+                // Proxy forwarded an error payload
+                if (data && data.error) {
+                    return { ok: false, error: data.error, raw: data };
                 }
 
                 console.warn('Unexpected proxy response format', data);
@@ -416,6 +427,15 @@
                 console.error('Network or parsing error fetching transactions', err);
                 return { ok: false, error: err.message || String(err) };
             }
+        }
+
+        function isMintTx(tx) {
+            if (!tx) return false;
+            const fn = (tx.functionName || tx.functionname || '').toString().toLowerCase();
+            if (fn && fn.includes('mint')) return true;
+            const input = (tx.input || tx.data || '').toString().toLowerCase();
+            if (input && (input.includes('mint') || input.includes('safemint'))) return true;
+            return false;
         }
 
         function filterTransactions(txs, filter) {
@@ -438,15 +458,18 @@
             if (!response.ok) {
                 // Build a helpful error message
                 let userMsg = response.error || 'Unknown error';
-                // If Etherscan returned a NOTOK, suggest common causes
+                // If Etherscan returned a deprecation/NOTOK, check if it's the V1 deprecation
                 const lower = (userMsg || '').toLowerCase();
-                if (lower.includes('notok') || lower.includes('apikey') || lower.includes('invalid') || lower.includes('rate limit')) {
-                    userMsg += ' — check your Etherscan API key validity and rate limits. If calling from a static site, Etherscan may restrict browser access.';
+                if (lower.includes('deprecated') && lower.includes('v1 endpoint')) {
+                    // API key doesn't support V1 anymore, but this is expected
+                    userMsg = 'Contract transactions not available via this API key (V1 deprecated)';
+                } else if (lower.includes('notok') || lower.includes('apikey') || lower.includes('invalid') || lower.includes('rate limit')) {
+                    userMsg += ' — check your Etherscan API key validity and rate limits.';
                 } else {
                     userMsg += ' — network/CORS or API issue.';
                 }
 
-                txList.innerHTML = `<tr><td colspan='4'>Unable to fetch transactions: ${userMsg}</td></tr>`;
+                txList.innerHTML = `<tr><td colspan='4'>${userMsg}</td></tr>`;
                 if (response.raw) console.debug('Etherscan raw response:', response.raw);
                 return;
             }
@@ -464,13 +487,16 @@
                 const from = tx && tx.from ? tx.from : 'Unknown';
                 const to = tx && tx.to ? tx.to : 'Contract';
                 const value = tx && tx.value ? (parseFloat(tx.value) / 1e18).toFixed(4) : '0.0000';
+                const method = tx && (tx.functionName || tx.functionname || tx.methodId) ? (tx.functionName || tx.functionname || tx.methodId) : '';
+                const mintClass = isMintTx(tx) ? 'mint-row' : '';
 
                 return `
-                <tr>
+                <tr class="${mintClass}">
                     <td>${hash ? `<a href="https://etherscan.io/tx/${hash}" target="_blank" rel="noopener">${hash.slice(0, 10)}...</a>` : 'N/A'}</td>
                     <td>${from.slice(0, 8)}...</td>
                     <td>${to.slice(0, 8)}...</td>
                     <td>${value} ETH</td>
+                    <td>${isMintTx(tx) ? '🟢 MINT' : (method ? method : '')}</td>
                 </tr>
             `}).join('');
         }
@@ -512,7 +538,7 @@ const maxSupply = 10000; // or null if unknown
 
     async function updateMintTracker() {
     // Call local proxy (server forwards to Etherscan V2)
-    const url = `/api/mints?address=${contractAddress}&page=1&offset=100`;
+    const url = `http://localhost:8080/api/mints?address=${contractAddress}&page=1&offset=100`;
     try {
         const res = await fetch(url);
         if (!res.ok) {
@@ -525,6 +551,14 @@ const maxSupply = 10000; // or null if unknown
 
         // Prefer Etherscan V2 'items' array
         const items = (data && Array.isArray(data.items)) ? data.items : (Array.isArray(data.result) ? data.result : []);
+        
+        // Check if this is a V1 deprecation response (status 0 with deprecation message)
+        if (data && data.status === '0' && data.message && data.message.includes('deprecated')) {
+            console.warn('V1 API deprecated for this key');
+            document.getElementById('minted-nfts').innerText = "No NFTs minted (V1 API deprecated).";
+            return;
+        }
+        
         if (items && items.length > 0) {
             // Extract token id fields robustly (different API versions use different names)
             const tokenIds = items.map(tx => tx.tokenID || tx.tokenId || tx.token_id || tx.tokenIDstr || tx.tokenIDStr).filter(Boolean);
@@ -533,8 +567,29 @@ const maxSupply = 10000; // or null if unknown
                 ? `${uniqueTokenIds.size} of ${maxSupply} minted`
                 : `${uniqueTokenIds.size} NFTs minted`;
             document.getElementById('minted-nfts').innerText = mintedText;
+        } else if (data && data.status === '0') {
+            // V1 error response
+            document.getElementById('minted-nfts').innerText = `Unable to fetch mint data: ${data.message || 'API error'}`;
         } else if (items && items.length === 0) {
-            document.getElementById('minted-nfts').innerText = "No NFTs minted yet.";
+            // No results from tokennfttx; fallback to provider logs (Transfer events)
+            try {
+                const logsRes = await fetch(`http://localhost:8080/api/logs?address=${contractAddress}`);
+                if (logsRes.ok) {
+                    const logsJson = await logsRes.json();
+                    const logs = Array.isArray(logsJson.result) ? logsJson.result : [];
+                    // Mints are Transfer events where from == zero address
+                    const zero = '0x0000000000000000000000000000000000000000';
+                    const mintTokenIds = logs.filter(l => l.from && l.from.toLowerCase() === zero).map(l => String(l.tokenId));
+                    const unique = new Set(mintTokenIds);
+                    const mintedText2 = maxSupply ? `${unique.size} of ${maxSupply} minted` : `${unique.size} NFTs minted`;
+                    document.getElementById('minted-nfts').innerText = mintedText2 || 'No NFTs minted yet.';
+                } else {
+                    document.getElementById('minted-nfts').innerText = "No NFTs minted yet.";
+                }
+            } catch (e) {
+                console.error('Fallback logs error', e);
+                document.getElementById('minted-nfts').innerText = "No NFTs minted yet.";
+            }
         } else {
             console.warn('Etherscan mint tracker response not OK', data);
             document.getElementById('minted-nfts').innerText = `Unable to fetch mint data: ${data && data.message ? data.message : 'Unknown error'}`;
