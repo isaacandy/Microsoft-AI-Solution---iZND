@@ -12,8 +12,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Archive site files
+      - name: Archive site files (replace PROXY_URL placeholder if provided)
+        env:
+          PROXY_URL: ${{ secrets.PROXY_URL }}
         run: |
+          if [ -n "$PROXY_URL" ]; then
+            echo "Replacing __PROXY_URL__ placeholder with provided PROXY_URL"
+            # Use a temporary file to avoid altering history
+            sed "s|__PROXY_URL__|$PROXY_URL|g" index.html > index._tmp.html || cp index.html index._tmp.html
+            mv index._tmp.html index.html
+          else
+            echo "No PROXY_URL secret provided; leaving __PROXY_URL__ placeholder in index.html"
+          fi
           zip -r site.zip index.html styles.css *.html || true
 
       - name: Upload to 4EVERLAND (placeholder)

@@ -381,9 +381,33 @@
             const contractAddress = "0x295a6a847e3715f224826aa88156f356ac523eef";
             const etherscanApiKey = "YQ1I3BIJVRMUJ9JAC75129TP8HGI4KSATR";
 
+            // PROXY configuration:
+            // - In development use localhost proxy at http://localhost:8080
+            // - In production, set a PROXY_URL at build/deploy time (e.g., the Cloudflare Worker URL)
+            //   The GitHub Action will replace the placeholder `__PROXY_URL__` with your worker URL when deploying.
+            const BUILT_PROXY_URL = '__PROXY_URL__'; // replaced in CI when deploying
+
+            function getProxyBase() {
+                // If a runtime global PROXY_URL is injected, prefer it
+                if (window.PROXY_URL && window.PROXY_URL.length) return window.PROXY_URL.replace(/\/$/, '');
+                // If CI replaced placeholder, use it
+                if (BUILT_PROXY_URL && BUILT_PROXY_URL !== '__PROXY_URL__') return BUILT_PROXY_URL.replace(/\/$/, '');
+                // If running locally, default to localhost proxy
+                if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') return 'http://localhost:8080';
+                // Otherwise, default to same origin (useful if you mount proxy under the same domain)
+                return location.origin;
+            }
+
+            const PROXY_BASE = getProxyBase();
+
+            function apiUrl(path) {
+                if (!path.startsWith('/')) path = '/' + path;
+                return `${PROXY_BASE}${path}`;
+            }
+
         // Fetch transactions via local proxy (server handles Etherscan V2 API key and headers)
         async function fetchTransactions() {
-            const url = `http://localhost:8080/api/txlist?address=${contractAddress}`;
+            const url = apiUrl(`/api/txlist?address=${contractAddress}`);
             try {
                 const res = await fetch(url);
                 if (!res.ok) {
@@ -537,8 +561,8 @@ document.getElementById('mint-btn').addEventListener('click', function(e) {
 const maxSupply = 10000; // or null if unknown
 
     async function updateMintTracker() {
-    // Call local proxy (server forwards to Etherscan V2)
-    const url = `http://localhost:8080/api/mints?address=${contractAddress}&page=1&offset=100`;
+    // Call proxy (server forwards to Etherscan V2)
+    const url = apiUrl(`/api/mints?address=${contractAddress}&page=1&offset=100`);
     try {
         const res = await fetch(url);
         if (!res.ok) {
@@ -573,7 +597,7 @@ const maxSupply = 10000; // or null if unknown
         } else if (items && items.length === 0) {
             // No results from tokennfttx; fallback to provider logs (Transfer events)
             try {
-                const logsRes = await fetch(`http://localhost:8080/api/logs?address=${contractAddress}`);
+                const logsRes = await fetch(apiUrl(`/api/logs?address=${contractAddress}`));
                 if (logsRes.ok) {
                     const logsJson = await logsRes.json();
                     const logs = Array.isArray(logsJson.result) ? logsJson.result : [];
