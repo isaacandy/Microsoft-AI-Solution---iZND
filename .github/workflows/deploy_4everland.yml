@@ -1,0 +1,29 @@
+name: Deploy to 4EVERLAND
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure zip is available
+        run: sudo apt-get update && sudo apt-get install -y zip || true
+
+      - name: Create deployment package
+        run: |
+          zip -r site.zip index.html styles.css README.md worker || true
+
+      - name: Show package contents
+        run: unzip -l site.zip || true
+
+      - name: Deploy to 4EVERLAND (call deploy script)
+        env:
+          FOURVERLAND_API_URL: ${{ secrets.FOURVERLAND_API_URL }}
+          FOURVERLAND_API_KEY: ${{ secrets.FOURVERLAND_API_KEY }}
+        run: |
+          chmod +x ./deploy_4everland.sh
+          ./deploy_4everland.sh
