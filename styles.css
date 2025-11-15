@@ -1,256 +1,273 @@
 /* Web3 AI Page Styling */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 body {
-    font-family: 'Montserrat', 'Roboto', sans-serif; /* Use Montserrat if available, fallback to Roboto */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #0e0e0e;
     color: #ffffff;
-    text-align: center;
+    line-height: 1.6;
 }
 
 header {
-    padding: 20px;
+    padding: 40px 20px;
     background: linear-gradient(to right, #ff8a00, #e52e71);
-}
-
-h1, h2 {
-    font-weight: bold;
-}
-h3 {
-    font-size: 22px;
-    color: #ff8a00;
-    margin-top: 30px;
-}
-
-.nft-gallery img {
-    width: 200px;
-    margin: 10px;
-    border-radius: 10px;
-    transition: transform 0.3s ease-in-out;
-}
-
-.nft-gallery img:hover {
-    transform: scale(1.1);
-}
-
-/* General Layout Fix */
-section {
-    width: 90%;
-    margin: 30px auto;
-    text-align: left; /* Keeps readability intact */
-    max-width: 1000px;
-}
-
-/* Web3 Table Formatting */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    border: 2px solid #ff8a00; /* Adds clear border */
-}
-
-th, td {
-    padding: 12px;
-    border: 1px solid #444; /* Column separators */
-    text-align: left; /* Improve readability */
-}
-
-th {
-    background: #ff8a00;
-    color: #fff;
-}
-
-/* Alternating Row Colors */
-tr:nth-child(even) {
-    background-color: rgba(14, 14, 14, 0.7);
-}
-
-tr:nth-child(odd) {
-    background-color: rgba(255, 138, 0, 0.1);
-}
-
-/* Call-to-Action */
-.cta-button {
-    display: block;
-    width: 250px;
-    margin: 20px auto;
-    padding: 12px;
-    font-size: 18px;
-    background: #e52e71;
-    color: white;
-    text-decoration: none;
-    border-radius: 8px;
     text-align: center;
-    transition: background 0.3s;
 }
 
-.cta-button:hover {
-    background: #ff8a00;
+header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
 }
 
-
-/* Transaction Table Formatting */
-#tx-table {
-    width: 100%;
-    margin: auto;
-    border-collapse: collapse;
-    border: 2px solid #ff8a00;
-}
-
-#tx-table th, #tx-table td {
-    padding: 10px;
-    border: 1px solid #444;
-    text-align: left;
-}
-
-#tx-table th {
-    background: rgba(255, 138, 0, 0.9);
-    color: #fff;
-}
-
-#tx-table tr:nth-child(even) {
-    background-color: rgba(14, 14, 14, 0.7);
-}
-
-#tx-table tr:nth-child(odd) {
-    background-color: rgba(255, 138, 0, 0.1);
-}
-
-/* Highlight mint transactions */
-.mint-row {
-    background: linear-gradient(90deg, rgba(34,197,94,0.08), rgba(255,138,0,0.05));
-    border-left: 4px solid #22c55e;
-}
-
-/* Ensure readable text */
-#tx-table td a {
-    color: #ff8a00;
-    text-decoration: none;
-}
-
-#tx-table td b {
-    font-weight: normal;
-}
-
-/* Column width adjustments */
-.tx-data {
-    flex: 1;
-    text-align: left;
-}
-
-.tx-hash {
-    flex: 2;
-    word-break: break-all; /* Prevent overflow */
-}
-
-/* Blockchain Verification Section */
-#verification {
-    background: rgba(30, 30, 30, 0.9);
-    color: #ffffff;
-    padding: 20px;
-    border-radius: 10px;
-}
-
-
-
-.transaction-tracker {
-    width: 100%;
-    height: 600px;
-    border: none;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(255, 138, 0, 0.3);
-}
-
-/* Fix Embedded Etherscan Display */
-.marketplace-frame, .transaction-tracker {
-    width: 100%;
-    height: 600px;
-    border: none;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(255, 138, 0, 0.3);
+header p {
+    font-size: 1.1rem;
+    opacity: 0.9;
 }
 
 /* Navigation Bar */
-/* Sticky Navigation Bar */
 .navbar {
+    background: rgba(30, 30, 30, 0.95);
+    padding: 0;
+    border-bottom: 2px solid #ff8a00;
     position: sticky;
     top: 0;
-    z-index: 1000;
-    width: 100%;
-    background: linear-gradient(to right, #ff8a00, #e52e71);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    margin-bottom: 30px;
-    padding: 0;
+    z-index: 100;
 }
 
 .navbar ul {
     list-style: none;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
     margin: 0;
     padding: 0;
-    display: flex;
-    justify-content: flex-start; /* Aligns menu to the left */
-    flex-wrap: wrap;
 }
 
 .navbar li {
-    margin: 0 18px;
+    margin: 0;
 }
 
 .navbar a {
     display: block;
-    color: #fff;
-    font-weight: bold;
+    padding: 15px 20px;
+    color: #ff8a00;
     text-decoration: none;
-    padding: 18px 0;
-    transition: color 0.2s;
-    font-size: 18px;
+    transition: background 0.3s, color 0.3s;
+    font-weight: 600;
 }
 
-.navbar a:hover, .navbar a:focus {
+.navbar a:hover {
+    background: #ff8a00;
     color: #0e0e0e;
+    text-decoration: none;
+}
+
+section {
+    width: 90%;
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 20px;
+    background: rgba(30, 30, 30, 0.8);
+    border-radius: 10px;
+}
+
+/* Outline Section */
+.outline-flex {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+}
+
+.outline-text {
+    flex: 1;
+    min-width: 300px;
+}
+
+.outline-img {
+    flex: 1;
+    min-width: 300px;
+}
+
+.outline-img img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    max-width: 400px;
+}
+
+/* Marketplace Frame */
+.marketplace-frame {
+    border: 2px solid #ff8a00;
+    border-radius: 8px;
+    margin: 20px 0;
+}
+
+h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: #ff8a00;
+}
+
+h3 {
+    font-size: 1.5rem;
+    margin: 20px 0 15px 0;
+    color: #ff8a00;
+}
+
+p {
+    margin-bottom: 15px;
+    font-size: 1rem;
+}
+
+a {
+    color: #ff8a00;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+a:hover {
+    color: #e52e71;
     text-decoration: underline;
 }
 
-/* Additional Styles for New Links */
-.navbar a {
-    position: relative;
+ul {
+    margin-left: 20px;
+    margin-bottom: 15px;
 }
 
-.navbar a::after {
-    content: '';
-    position: absolute;
-    width: 0;
-    height: 2px;
-    bottom: -2px;
-    left: 50%;
+ul li {
+    margin-bottom: 8px;
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    border: 2px solid #ff8a00;
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #444;
+}
+
+th {
+    background: #ff8a00;
+    color: #0e0e0e;
+    font-weight: bold;
+}
+
+tr:nth-child(even) {
+    background-color: rgba(255, 138, 0, 0.05);
+}
+
+tr:nth-child(odd) {
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+/* Transaction Table - Mint Row Highlight */
+.mint-row {
+    background: linear-gradient(90deg, rgba(34, 197, 94, 0.1), rgba(255, 138, 0, 0.1));
+    border-left: 4px solid #22c55e;
+}
+
+/* Select & Input */
+select, input {
+    padding: 10px;
+    margin: 10px 0;
+    background: #1a1a1a;
+    color: #ffffff;
+    border: 1px solid #ff8a00;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+select:focus, input:focus {
+    outline: none;
+    border-color: #e52e71;
+    box-shadow: 0 0 5px #e52e71;
+}
+
+label {
+    display: inline-block;
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+/* Call-to-Action Button */
+.cta-button {
+    display: inline-block;
+    padding: 15px 30px;
+    margin: 20px 10px 20px 0;
+    background: linear-gradient(to right, #ff8a00, #e52e71);
+    color: #ffffff;
+    font-size: 1.1rem;
+    font-weight: bold;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: transform 0.3s, box-shadow 0.3s;
+    border: none;
+    cursor: pointer;
+}
+
+.cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(255, 138, 0, 0.3);
+}
+
+/* Footer */
+footer {
+    background: linear-gradient(to right, #ff8a00, #e52e71);
+    text-align: center;
+    padding: 30px 20px;
+    margin-top: 60px;
+}
+
+footer p {
+    margin-bottom: 15px;
+}
+
+footer .cta-button {
     background: #0e0e0e;
-    transition: width 0.3s ease, left 0.3s ease;
+    color: #ff8a00;
 }
 
-.navbar a:hover::after, .navbar a:focus::after {
-    width: 100%;
-    left: 0;
+footer .cta-button:hover {
+    background: #1a1a1a;
+    color: #e52e71;
 }
 
-.outline-flex {
-    display: flex;
-    align-items: center;
-    gap: 32px;
-    flex-wrap: wrap;
-}
-.outline-text {
-    flex: 2 1 320px;
-}
-.outline-img img {
-    max-width: 220px;
-    width: 100%;
-    border-radius: 12px;
-    display: block;
-    margin: 0 auto;
-}
-@media (max-width: 700px) {
-    .outline-flex {
-        flex-direction: column;
-        align-items: flex-start;
+/* Responsive */
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 1.8rem;
     }
-    .outline-img img {
-        margin: 20px 0 0 0;
+
+    section {
+        width: 95%;
+    }
+
+    table {
+        font-size: 0.9rem;
+    }
+
+    th, td {
+        padding: 8px;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    h3 {
+        font-size: 1.2rem;
     }
 }
